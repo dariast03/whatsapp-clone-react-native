@@ -16,11 +16,8 @@ import {
 import MaskInput from 'react-native-mask-input';
 import { isClerkAPIResponseError, useSignIn, useSignUp } from '@clerk/clerk-expo';
 
-const GER_PHONE = [
+const BOLIVIA_PHONE = [
   `+`,
-  /\d/,
-  /\d/,
-  ' ',
   /\d/,
   /\d/,
   /\d/,
@@ -65,6 +62,7 @@ const Page = () => {
       console.log('error', JSON.stringify(err, null, 2));
 
       if (isClerkAPIResponseError(err)) {
+        console.log("🚀 ~ sendOTP ~ err:", err)
         if (err.errors[0].code === 'form_identifier_exists') {
           // User signed up before
           console.log('User signed up before');
@@ -118,7 +116,7 @@ const Page = () => {
 
         <View style={styles.list}>
           <View style={styles.listItem}>
-            <Text style={styles.listItemText}>Germany</Text>
+            <Text style={styles.listItemText}>Bolivia</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
           </View>
           <View style={styles.separator} />
@@ -127,11 +125,11 @@ const Page = () => {
             value={phoneNumber}
             keyboardType="numeric"
             autoFocus
-            placeholder="+12 your phone number"
+            placeholder="+591 your phone number"
             onChangeText={(masked, unmasked) => {
               setPhoneNumber(masked);
             }}
-            mask={GER_PHONE}
+            mask={BOLIVIA_PHONE}
             style={styles.input}
           />
         </View>
@@ -226,7 +224,6 @@ const styles = StyleSheet.create({
     padding: 6,
     marginTop: 10,
   },
-
   loading: {
     zIndex: 10,
     backgroundColor: '#fff',

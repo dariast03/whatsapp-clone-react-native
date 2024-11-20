@@ -8,30 +8,30 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 const Page = () => {
   const devices = [
     {
-      name: 'Broadcast Lists',
+      name: 'Listas de Difusión',
       icon: 'megaphone',
       backgroundColor: Colors.green,
     },
     {
-      name: 'Starred Messages',
+      name: 'Mensajes Destacados',
       icon: 'star',
       backgroundColor: Colors.yellow,
     },
     {
-      name: 'Linked Devices',
+      name: 'Dispositivos Vinculados',
       icon: 'laptop-outline',
       backgroundColor: Colors.green,
     },
   ];
-
+  
   const items = [
     {
-      name: 'Account',
+      name: 'Cuenta',
       icon: 'key',
       backgroundColor: Colors.primary,
     },
     {
-      name: 'Privacy',
+      name: 'Privacidad',
       icon: 'lock-closed',
       backgroundColor: '#33A5D1',
     },
@@ -41,29 +41,30 @@ const Page = () => {
       backgroundColor: Colors.green,
     },
     {
-      name: 'Notifications',
+      name: 'Notificaciones',
       icon: 'notifications',
       backgroundColor: Colors.red,
     },
     {
-      name: 'Storage and Data',
+      name: 'Almacenamiento y Datos',
       icon: 'repeat',
       backgroundColor: Colors.green,
     },
   ];
-
+  
   const support = [
     {
-      name: 'Help',
+      name: 'Ayuda',
       icon: 'information',
       backgroundColor: Colors.primary,
     },
     {
-      name: 'Tell a Friend',
+      name: 'Recomienda a un Amigo',
       icon: 'heart',
       backgroundColor: Colors.red,
     },
   ];
+  
   const { signOut } = useAuth();
 
   const onSignOut = () => {

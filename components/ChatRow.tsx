@@ -1,5 +1,6 @@
 import AppleStyleSwipeableRow from '@/components/AppleStyleSwipeableRow';
 import Colors from '@/constants/Colors';
+import { useChatStore } from '@/store/use-chat-store';
 import { format } from 'date-fns';
 import { Link } from 'expo-router';
 import { FC } from 'react';
@@ -16,9 +17,12 @@ export interface ChatRowProps {
 }
 
 const ChatRow: FC<ChatRowProps> = ({ id, from, date, img, msg, read, unreadCount }) => {
+  const {setChat} = useChatStore()
   return (
     <AppleStyleSwipeableRow>
-      <Link href={`/(tabs)/chats/${id}`} asChild>
+      <Link href={`/(tabs)/chats/${id}`} asChild onPress={() => {
+        setChat(from, img)
+      }}>
         <TouchableHighlight activeOpacity={0.8} underlayColor={Colors.lightGray}>
           <View
             style={{

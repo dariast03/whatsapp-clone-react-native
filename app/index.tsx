@@ -1,35 +1,61 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
-import Colors from '@/constants/Colors';
-import { Link } from 'expo-router';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import welcomeImage from '@/assets/images/welcome.png';
+
 const welcome_image = Image.resolveAssetSource(welcomeImage).uri;
 
 const WelcomeScreen = () => {
-  const openLink = () => {
-    Linking.openURL('https://galaxies.dev');
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.95, { damping: 10 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 10 });
+  };
+
+  const openChats = () => {
+    Linking.openURL('com.supersimon.whatsapp://chats')
+      .catch(() => {
+        alert('No se pudo abrir la aplicación. Asegúrate de que esté instalada.');
+      });
   };
 
   return (
     <View style={styles.container}>
       <Image source={{ uri: welcome_image }} style={styles.welcome} />
-      <Text style={styles.headline}>Welcome to WhatsApp Clone</Text>
+      <Text style={styles.headline}>¡Bienvenido a HablemosYA!</Text>
       <Text style={styles.description}>
-        Read our{' '}
-        <Text style={styles.link} onPress={openLink}>
-          Privacy Policy
+        Lee nuestra{' '}
+        <Text style={styles.link} onPress={() => Linking.openURL('https://galaxies.dev')}>
+          Política de Privacidad
         </Text>
-        . {'Tap "Agree & Continue" to accept the '}
-        <Text style={styles.link} onPress={openLink}>
-          Terms of Service
+        . {'Presiona "Aceptar y Continuar" para aceptar los '}
+        <Text style={styles.link} onPress={() => Linking.openURL('https://galaxies.dev')}>
+          Términos de Servicio
         </Text>
         .
       </Text>
-      <Link href={'/otp'} replace asChild>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Agree & Continue</Text>
+      <Animated.View style={[styles.buttonContainer, animatedStyle]}>
+        <TouchableOpacity
+          onPress={openChats}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>Aceptar y Continuar</Text>
         </TouchableOpacity>
-      </Link>
+      </Animated.View>
     </View>
   );
 };
@@ -40,36 +66,51 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
   },
   welcome: {
-    width: '100%',
-    height: 300,
-    borderRadius: 60,
-    marginBottom: 80,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    marginBottom: 40,
   },
   headline: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginVertical: 20,
+    color: '#333',
+    marginVertical: 10,
+    textAlign: 'center',
   },
   description: {
-    fontSize: 14,
+    fontSize: 16,
     textAlign: 'center',
-    marginBottom: 80,
-    color: Colors.gray,
+    marginBottom: 40,
+    color: '#555',
   },
   link: {
-    color: Colors.primary,
+    color: '#FF8C42',
+    textDecorationLine: 'underline',
   },
-  button: {
+  buttonContainer: {
     width: '100%',
     alignItems: 'center',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#FF8C42',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
   buttonText: {
-    color: Colors.primary,
-    fontSize: 22,
-    fontWeight: '500',
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
 

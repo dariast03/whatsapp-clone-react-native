@@ -6,13 +6,13 @@ const Layout = () => {
       <Stack.Screen
         name="index"
         options={{
-          title: 'Settings',
+          title: 'Ajustes',
           headerLargeTitle: true,
           headerShadowVisible: false,
           headerStyle: { backgroundColor: Colors.background },
 
           headerSearchBarOptions: {
-            placeholder: 'Search',
+            placeholder: 'Buscar',
           },
         }}
       />

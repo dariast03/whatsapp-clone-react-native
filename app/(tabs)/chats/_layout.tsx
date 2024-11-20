@@ -1,9 +1,11 @@
 import Colors from '@/constants/Colors';
+import { useChatStore } from '@/store/use-chat-store';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, Stack } from 'expo-router';
 import { TouchableOpacity, View, Text, Image } from 'react-native';
 
 const Layout = () => {
+  const {chatName,chatImage}= useChatStore()
   return (
     <Stack>
       <Stack.Screen
@@ -59,11 +61,11 @@ const Layout = () => {
               }}>
               <Image
                 source={{
-                  uri: 'https://pbs.twimg.com/profile_images/1564203599747600385/f6Lvcpcu_400x400.jpg',
+                  uri: chatImage,
                 }}
                 style={{ width: 40, height: 40, borderRadius: 50 }}
               />
-              <Text style={{ fontSize: 16, fontWeight: '500' }}>Simon Grimm</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500' }}>{chatName}</Text>
             </View>
           ),
           headerRight: () => (

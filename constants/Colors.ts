@@ -8,4 +8,19 @@ export default {
   lightGreen: '#DBFFCB',
   red: '#EF0827',
   yellow: '#FCC70B',
+  light: {
+    text: "#000",
+    background: "#223B82",
+  //  tint: tintColorLight,
+    tabIconDefault: "#ccc",
+   // tabIconSelected: tintColorLight,
+  },
+  dark: {
+    text: "#fff",
+    background: "#040e22",
+    secondary: "#0D1F46",
+ //   tint: tintColorDark,
+    tabIconDefault: "#ccc",
+   // tabIconSelected: tintColorDark,
+  },
 };

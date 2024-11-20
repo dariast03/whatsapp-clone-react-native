@@ -8,6 +8,8 @@ import * as SecureStore from 'expo-secure-store';
 import { TouchableOpacity, View } from 'react-native';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Toast from "react-native-toast-message";
 
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -36,6 +38,7 @@ export {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+const queryClient = new QueryClient()
 
 const InitialLayout = () => {
   const { isLoaded, isSignedIn } = useAuth();
@@ -74,7 +77,9 @@ const InitialLayout = () => {
   }
 
   return (
-    <Stack>
+    <QueryClientProvider client={queryClient}>
+      <Toast/>
+      <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
         name="otp"
@@ -114,6 +119,7 @@ const InitialLayout = () => {
         }}
       />
     </Stack>
+    </QueryClientProvider>
   );
 };
 

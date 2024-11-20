@@ -1,190 +1,311 @@
-import ChatMessageBox from '@/components/ChatMessageBox';
-import ReplyMessageBar from '@/components/ReplyMessageBar';
-import Colors from '@/constants/Colors';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { ImageBackground, StyleSheet, View } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import { useCallback, useEffect, useState } from "react";
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import {
   GiftedChat,
+  Send,
   Bubble,
   InputToolbar,
-  Send,
-  SystemMessage,
-  IMessage,
-} from 'react-native-gifted-chat';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import messageData from '@/assets/data/messages.json';
+  Composer,
+  IChatMessage,
+} from "react-native-gifted-chat";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+//import { COLORS } from "~/constants";
+import { useAuth } from "../../../hooks/use-auth";
 
-const Page = () => {
-  const [messages, setMessages] = useState<IMessage[]>([]);
-  const [text, setText] = useState('');
-  const insets = useSafeAreaInsets();
+import Toast from "react-native-toast-message";
+import Colors from "@/constants/Colors";
+import Actions from "./_components/actions";
+import { useStorage } from "@/hooks/use-storage";
+import { useChat } from '../../../hooks/use-chat';
 
-  const [replyMessage, setReplyMessage] = useState<IMessage | null>(null);
-  const swipeableRowRef = useRef<Swipeable | null>(null);
+const ChatScreen = () => {
+  {
+    const { status, user } = useAuth();
+    const {id} = useLocalSearchParams<{id:string}>();
+    
+    const [chatId, setChatId] = useState<null | string>(id)
 
-  useEffect(() => {
-    setMessages([
-      ...messageData.map((message) => {
-        return {
-          _id: message.id,
-          text: message.msg,
-          createdAt: new Date(message.date),
-          user: {
-            _id: message.from,
-            name: message.from ? 'You' : 'Bob',
-          },
-        };
-      }),
-      {
-        _id: 0,
-        system: true,
-        text: 'All your base are belong to us',
-        createdAt: new Date(),
-        user: {
-          _id: 0,
-          name: 'Bot',
-        },
-      },
-    ]);
-  }, []);
+    const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
-  const onSend = useCallback((messages = []) => {
-    setMessages((previousMessages: any[]) => GiftedChat.append(previousMessages, messages));
-  }, []);
+    const { data, setData, enviarMensage, getMensages, isLoading } = useChat({
+      CHAT_ID: chatId,
+    });
 
-  const renderInputToolbar = (props: any) => {
-    return (
-      <InputToolbar
-        {...props}
-        containerStyle={{ backgroundColor: Colors.background }}
-        renderActions={() => (
-          <View style={{ height: 44, justifyContent: 'center', alignItems: 'center', left: 5 }}>
-            <Ionicons name="add" color={Colors.primary} size={28} />
-          </View>
-        )}
-      />
-    );
-  };
+    const { uploadFileMutation } = useStorage();
 
-  const updateRowRef = useCallback(
-    (ref: any) => {
-      if (
-        ref &&
-        replyMessage &&
-        ref.props.children.props.currentMessage?._id === replyMessage._id
-      ) {
-        swipeableRowRef.current = ref;
-      }
-    },
-    [replyMessage]
-  );
+    const onSend = useCallback(
+      async (messages: IChatMessage[] = []) => {
+        let _id = Math.floor(Math.random() * 1000000);
+        console.log("🚀 ~ selectedImages:", selectedImages)
 
-  useEffect(() => {
-    if (replyMessage && swipeableRowRef.current) {
-      swipeableRowRef.current.close();
-      swipeableRowRef.current = null;
-    }
-  }, [replyMessage]);
+        try {
+          if (selectedImages.length) {
+            const payload = {
+              message: messages[0]?.text,
+              type: "image",
+              image: selectedImages[0],
+            } as const;
 
-  return (
-    <ImageBackground
-      source={require('@/assets/images/pattern.png')}
-      style={{
-        flex: 1,
-        backgroundColor: Colors.background,
-        marginBottom: insets.bottom,
-      }}>
-      <GiftedChat
-        messages={messages}
-        onSend={(messages: any) => onSend(messages)}
-        onInputTextChanged={setText}
-        user={{
-          _id: 1,
-        }}
-        renderSystemMessage={(props) => (
-          <SystemMessage {...props} textStyle={{ color: Colors.gray }} />
-        )}
-        bottomOffset={insets.bottom}
-        renderAvatar={null}
-        maxComposerHeight={100}
-        textInputProps={styles.composer}
-        renderBubble={(props) => {
-          return (
-            <Bubble
-              {...props}
-              textStyle={{
-                right: {
-                  color: '#000',
-                },
-              }}
-              wrapperStyle={{
-                left: {
-                  backgroundColor: '#fff',
-                },
-                right: {
-                  backgroundColor: Colors.lightGreen,
-                },
-              }}
-            />
+            const parsedPayload: IChatMessage = {
+              _id,
+              text: messages[0]?.text,
+              user: {
+                _id: 1,
+              },
+              createdAt: new Date(),
+              image: payload.image,
+            };
+
+            setSelectedImages([]);
+
+            setData((previousMessages: IChatMessage[]) =>
+              GiftedChat.append(previousMessages, [parsedPayload])
+            );
+
+            const urlImage = await uploadFileMutation.mutateAsync({
+              uri: payload.image,
+              folderName: "chat",
+            });
+
+            await enviarMensage({
+              ...payload,
+              image: urlImage,
+            });
+          } else if (messages[0]?.text) {
+            const payload = {
+              message: messages[0]?.text,
+              type: "text",
+            } as const;
+
+            const parsedPayload: IChatMessage = {
+              _id,
+              text: messages[0]?.text,
+              user: {
+                _id: 1,
+              },
+              createdAt: new Date(),
+            };
+
+            setData((previousMessages: IChatMessage[]) =>
+              GiftedChat.append(previousMessages, [parsedPayload])
+            );
+
+            await enviarMensage(payload);
+          }
+        } catch (e) {
+          Toast.show({
+            text1: "Error",
+            text2: "No se pudo enviar el mensaje, vuelve a intentarlo",
+            type: "error",
+          });
+          setData((previousMessages: IChatMessage[]) =>
+            previousMessages.filter((msg) => msg._id !== _id)
           );
-        }}
-        renderSend={(props) => (
-          <View
-            style={{
-              height: 44,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 14,
-              paddingHorizontal: 14,
-            }}>
-            {text === '' && (
-              <>
-                <Ionicons name="camera-outline" color={Colors.primary} size={28} />
-                <Ionicons name="mic-outline" color={Colors.primary} size={28} />
-              </>
-            )}
-            {text !== '' && (
-              <Send
-                {...props}
-                containerStyle={{
-                  justifyContent: 'center',
-                }}>
-                <Ionicons name="send" color={Colors.primary} size={28} />
-              </Send>
-            )}
-          </View>
-        )}
-        renderInputToolbar={renderInputToolbar}
-        renderChatFooter={() => (
-          <ReplyMessageBar clearReply={() => setReplyMessage(null)} message={replyMessage} />
-        )}
-        onLongPress={(context, message) => setReplyMessage(message)}
-        renderMessage={(props) => (
-          <ChatMessageBox
-            {...props}
-            setReplyOnSwipeOpen={setReplyMessage}
-            updateRowRef={updateRowRef}
+        }
+        /*   setData((previousMessages: any) =>
+          GiftedChat.append(previousMessages, messages)
+        ); */
+      },
+      [chatId, selectedImages]
+    );
+
+    const startChat = async () => {
+      if (status === "authenticated") {
+        setChatId("MI_CHAT_ID");
+      } 
+      
+    };
+
+    useEffect(() => {
+      startChat();
+    }, []);
+
+    useEffect(() => {
+      if (chatId) getMensages();
+    }, [chatId]);
+
+    /* useEffect(() => {
+      //console.log(chatId, "USE EFET")
+      if (chatId && chatId.length > 0) {
+        if (status === "autenticado") {
+          setChatId(user.usuario.documentoIdentidad)
+          //console.log(chatId)
+        } else {
+          setVisibleModal(true)
+        }
+        getMensages()
+      }
+    }, [chatId]) */
+
+  
+
+    const onSendAction = (data: { image: string }[]) => {
+      setSelectedImages(data.map((img) => img.image));
+    };
+
+    const renderActions = useCallback(
+      (props: any) =>
+        Platform.OS === "web" ? null : (
+          <Actions {...props} onSend={onSendAction} />
+        ),
+      [onSendAction]
+    );
+
+    const renderChatFooter = () => {
+      if (!selectedImages.length) return null;
+
+      const removeImage = (uri: string) => {
+        setSelectedImages((images) => images.filter((img) => img !== uri));
+      };
+
+      return (
+        <View style={styles.container}>
+      {selectedImages.map((uri) => (
+        <View key={uri} style={styles.imageContainer}>
+          <Image
+            source={{
+              uri
+            }}
+            resizeMode="cover"
+            style={styles.image}
           />
-        )}
-      />
-    </ImageBackground>
+          <View style={styles.closeButtonContainer}>
+            <TouchableOpacity onPress={() => removeImage(uri)}>
+              <MaterialCommunityIcons name="close" size={20} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+    </View>
+      );
+    };
+
+    return (
+      <GiftedChat
+            renderChatFooter={renderChatFooter}
+            messages={data}
+            onQuickReply={(s) => {
+              // console.log(s);
+            }}
+            onSend={(messages: any) => onSend(messages)}
+            user={{
+              _id: 1,
+            }}
+            infiniteScroll
+            alwaysShowSend
+            renderSend={(props) => <BotonEnviar {...props} />}
+            placeholder="Escribe algo..."
+            renderBubble={(props) => <Burbuja {...props} />}
+            renderInputToolbar={(props) => <Input {...props} />}
+            renderActions={renderActions}
+            scrollToBottom
+            scrollToBottomComponent={() => (
+              <View>
+                <FontAwesome name="chevron-down" />
+              </View>
+            )}
+          />
+    );
+  }
+};
+
+const Burbuja = (props: any) => {
+  const isDark = false
+  return (
+    <Bubble
+      {...props}
+      wrapperStyle={{
+        right: {
+          backgroundColor: isDark
+            ? Colors.dark.secondary
+            : Colors.light.background,
+        },
+        left: {
+          backgroundColor: isDark ? "#3b70ff" : "#cccccc49",
+        },
+      }}
+      textStyle={{
+        right: {
+          color: "#fff",
+        },
+        left: {
+          color: isDark ? "#FFF" : "#000",
+        },
+      }}
+    />
+  );
+};
+
+const Input = (props: any) => {
+  const isDark = false;
+  return (
+    <InputToolbar
+      {...props}
+      optionTintColor="#fff"
+      renderComposer={(x) => (
+        <Composer {...x} textInputStyle={{ color: isDark ? "#FFF" : "#000" }} />
+      )}
+      containerStyle={{
+        backgroundColor: isDark ? Colors.dark.secondary : "#fff",
+        marginLeft: 15,
+        marginRight: 15,
+        marginBottom: 5,
+        borderRadius: 25,
+        borderWidth: 0.2,
+      }}
+    />
+  );
+};
+
+const BotonEnviar = (props: any) => {
+  const isDark = false
+  return (
+    <Send {...props} containerStyle={{ borderWidth: 0 }}>
+      <View>
+        <MaterialCommunityIcons
+          name="send-circle"
+          size={35}
+          color={isDark ? "#FFF" : Colors.light.background}
+          style={{ padding: 5 }}
+        />
+      </View>
+    </Send>
   );
 };
 
 const styles = StyleSheet.create({
-  composer: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: Colors.lightGray,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    fontSize: 16,
-    marginVertical: 4,
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: '100%',
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  containerDark: {
+    backgroundColor: '#1f2937', // Este es un color aproximado para dark:bg-secondary-dark
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 20,
+    width: '100%',
+    height: 240, // aproximadamente 60 unidades de Tailwind
+  },
+  image: {
+    height: '100%',
+  },
+  closeButtonContainer: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: 'white',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
-export default Page;
+export default ChatScreen;

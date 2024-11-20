@@ -21,29 +21,12 @@ const TabsLayout = () => {
           },
           headerShadowVisible: false,
         }}>
-        <Tabs.Screen
-          name="updates"
-          options={{
-            title: 'Updates',
-            tabBarIcon: ({ size, color }) => (
-              <MaterialIcons name="update" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="calls"
-          options={{
-            title: 'Calls',
-            tabBarIcon: ({ size, color }) => (
-              <MaterialCommunityIcons name="phone-outline" size={size} color={color} />
-            ),
-            headerShown: false,
-          }}
-        />
+  
+
         <Tabs.Screen
           name="communities"
           options={{
-            title: 'Communities',
+            title: 'Grupos',
             tabBarIcon: ({ size, color }) => (
               <MaterialIcons name="people" size={size} color={color} />
             ),
@@ -67,7 +50,7 @@ const TabsLayout = () => {
         <Tabs.Screen
           name="settings"
           options={{
-            title: 'Settings',
+            title: 'Ajustes',
             tabBarIcon: ({ size, color }) => <Ionicons name="cog" size={size} color={color} />,
             headerShown: false,
           }}
